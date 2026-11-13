@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "OJT Hours Tracker",
+    "slug": "ojt-hours-tracker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ojt.hourstracker"
+    },
+    "android": {
+      "package": "com.ojt.hourstracker",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f172a"
+      }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#3b82f6"
+        }
+      ]
+    ],
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a7c5a347-c0e7-4804-905f-14eaa3c67c03"
+      }
+    },
+    "runtimeVersion": "1.7",
+    "updates": {
+      "url": "https://u.expo.dev/a7c5a347-c0e7-4804-905f-14eaa3c67c03"
+    }
+  }
+}

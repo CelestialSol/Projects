@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for secure authentication & ownership checks
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // 1. User Root Document & Nested Sub-Collections
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      // Shift logs: only the owner can manage their shift logs; authenticated dev can read for monitoring
+      match /logs/{logId} {
+        allow read: if isAuthenticated();
+        allow write: if isOwner(userId);
+      }
+
+      // Profile details: owner can write; authenticated dev/coordinator can read
+      match /profile/{profileDoc} {
+        allow read: if isAuthenticated();
+        allow write: if isOwner(userId);
+      }
+
+      // Active running shift timer: owner can write; authenticated dev/coordinator can read for live timers
+      match /activeShift/{shiftDoc} {
+        allow read: if isAuthenticated();
+        allow write: if isOwner(userId);
+      }
+    }
+
+    // Collection Group Queries for Dev & Coordinator Paneling
+    match /{path=**}/profile/{profileDoc} {
+      allow read: if isAuthenticated();
+    }
+
+    match /{path=**}/activeShift/{shiftDoc} {
+      allow read: if isAuthenticated();
+    }
+
+    match /{path=**}/logs/{logId} {
+      allow read: if isAuthenticated();
+    }
+
+    // 2. Feedbacks Collection
+    // Authenticated users can submit feedback; authenticated dev/admin can read and mark resolved
+    match /Feedbacks/{feedbackId} {
+      allow create: if isAuthenticated() && 
+                    request.resource.data.userId == request.auth.uid &&
+                    request.resource.data.message is string &&
+                    request.resource.data.message.size() > 0 &&
+                    request.resource.data.message.size() <= 3000;
+      
+      allow read, update, delete: if isAuthenticated();
+    }
+
+    // 3. AppCrashes Collection
+    // Any device can log a crash report; authenticated dev can read, resolve, and manage
+    match /AppCrashes/{crashId} {
+      allow create: if true;
+      allow read, update, delete: if isAuthenticated();
+    }
+
+    // 4. User Directory (Presence & High-Level Roster for Dev & Coordinator Panel)
+    match /user_directory/{userId} {
+      allow create, update: if isAuthenticated();
+      allow read: if isAuthenticated();
+    }
+
+    // Deny all other access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
